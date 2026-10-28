@@ -1,0 +1,338 @@
+{
+  "info": {
+    "_postman_id": "foodbridge-api-hack-p197",
+    "name": "FoodBridge API - Food Donation & Redistribution Platform",
+    "description": "Comprehensive Postman test collection for FoodBridge (Problem ID: HACK-P197), covering Auth, Listings, Requests, Concurrency, RBAC, Admin Moderation, and Impact Stats.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api/v1", "type": "string" },
+    { "key": "donorToken", "value": "", "type": "string" },
+    { "key": "recipientToken", "value": "", "type": "string" },
+    { "key": "adminToken", "value": "", "type": "string" },
+    { "key": "listingId", "value": "", "type": "string" },
+    { "key": "requestId", "value": "", "type": "string" },
+    { "key": "verificationCode", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "0. System & Governance",
+      "item": [
+        {
+          "name": "Service Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Service is healthy', () => pm.expect(pm.response.json().status).to.eql('healthy'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Food Safety Disclaimer",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/food-safety"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Contains disclaimer', () => pm.expect(pm.response.json().disclaimer).to.include('DOES NOT inspect'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "1. Authentication & RBAC",
+      "item": [
+        {
+          "name": "Login Donor (Grand Plaza)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login Success', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('donorToken', json.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"donor@grandplaza.com\",\n  \"password\": \"Password@123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login Recipient (Hope Food Bank)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login Success', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('recipientToken', json.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"recipient@hopefoodbank.org\",\n  \"password\": \"Password@123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login Success', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('adminToken', json.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@foodbridge.org\",\n  \"password\": \"Admin@123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Authenticated Profile",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/auth/me",
+            "header": [{ "key": "Authorization", "value": "Bearer {{donorToken}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Food Listings",
+      "item": [
+        {
+          "name": "Browse Active Listings (Public / Search / Filter)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/listings?category=COOKED_MEALS&sortBy=urgency"
+          }
+        },
+        {
+          "name": "Create Donation Listing (Donor)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Listing Created', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('listingId', json.listing.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/listings",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{donorToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Gourmet Sandwiches & Fresh Wraps Platter\",\n  \"description\": \"Surplus meeting luncheon platters. Assorted vegetarian and halal chicken wraps, kept refrigerated.\",\n  \"category\": \"COOKED_MEALS\",\n  \"quantity\": 30,\n  \"unit\": \"servings\",\n  \"dietaryInfo\": \"Halal\",\n  \"useBy\": \"2026-11-01T18:00:00.000Z\",\n  \"pickupWindowStart\": \"2026-10-29T12:00:00.000Z\",\n  \"pickupWindowEnd\": \"2026-10-29T17:00:00.000Z\",\n  \"pickupAddress\": \"500 Grand Avenue, Banquet Kitchen 3\",\n  \"pickupCity\": \"Metropolis\",\n  \"storageInstructions\": \"Store chilled below 4°C\",\n  \"foodSafetyConfirmed\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Listing Details By ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/listings/{{listingId}}"
+          }
+        },
+        {
+          "name": "Get My Donor Listings",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/listings/donor/mine",
+            "header": [{ "key": "Authorization", "value": "Bearer {{donorToken}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Donation Requests & Fulfillment Workflow",
+      "item": [
+        {
+          "name": "Submit Claim Request (Recipient)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Request Created', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('requestId', json.request.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/requests",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{recipientToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"listingId\": \"{{listingId}}\",\n  \"requestedQuantity\": 30,\n  \"purpose\": \"Distribution to afternoon soup kitchen clients\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Recipient Active Requests",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/requests/recipient/mine",
+            "header": [{ "key": "Authorization", "value": "Bearer {{recipientToken}}" }]
+          }
+        },
+        {
+          "name": "Get Donor Incoming Requests",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/requests/donor/incoming",
+            "header": [{ "key": "Authorization", "value": "Bearer {{donorToken}}" }]
+          }
+        },
+        {
+          "name": "Accept Request (Donor - Atomic Concurrency Guard)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Request Accepted', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('verificationCode', json.request.verificationCode);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/requests/{{requestId}}/accept",
+            "header": [{ "key": "Authorization", "value": "Bearer {{donorToken}}" }]
+          }
+        },
+        {
+          "name": "Complete Pickup Handover (With Verification Code)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/requests/{{requestId}}/complete",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{donorToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"verificationCode\": \"{{verificationCode}}\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Impact Statistics & Metrics",
+      "item": [
+        {
+          "name": "Public Impact Statistics",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/stats/platform"
+          }
+        },
+        {
+          "name": "User Personalized Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/stats/dashboard",
+            "header": [{ "key": "Authorization", "value": "Bearer {{donorToken}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Admin Moderation & Audit Logs",
+      "item": [
+        {
+          "name": "Get All Users Directory",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/users",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }]
+          }
+        },
+        {
+          "name": "Verify Recipient Organisation",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/admin/users/RECIPIENT_USER_ID/verify",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isVerified\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Platform Audit Logs",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/audit-logs",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }]
+          }
+        }
+      ]
+    }
+  ]
+}

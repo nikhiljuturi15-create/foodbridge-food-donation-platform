@@ -1,0 +1,45 @@
+================================================================================
+FoodBridge (HACK-P197) - Automated Test Execution Results
+Execution Date: 2026-10-28
+Environment: Node.js v24.13.0 | SQLite 3 (Prisma 5.22.0) | Vitest v2.1.9 | Supertest v7.0.0
+================================================================================
+
+ RUN  v2.1.9 C:/Users/nikhi/Downloads/NikhilBackendProject/server
+
+ ✓ src/__tests__/api.test.ts (23 tests) 1353ms
+   ✓ 1. Health & Disclaimer Endpoints
+     ✓ GET /api/v1/health returns 200 with service metadata
+     ✓ GET /api/v1/food-safety returns required non-certification disclaimer
+   ✓ 2. Authentication & User Registration
+     ✓ POST /api/v1/auth/register registers a new donor successfully
+     ✓ POST /api/v1/auth/register rejects duplicate email with 409
+     ✓ POST /api/v1/auth/register fails on invalid email format
+     ✓ POST /api/v1/auth/login succeeds with valid credentials
+     ✓ POST /api/v1/auth/login rejects incorrect password with 401
+     ✓ GET /api/v1/auth/me returns authenticated user details
+   ✓ 3. Listing CRUD & Input Validations
+     ✓ GET /api/v1/listings returns seeded public listings
+     ✓ POST /api/v1/listings creates a new listing as DONOR
+     ✓ POST /api/v1/listings rejects listing creation if food safety is not confirmed
+     ✓ POST /api/v1/listings prevents RECIPIENT from posting listings (RBAC 403)
+     ✓ GET /api/v1/listings/:id retrieves full listing details
+     ✓ PUT /api/v1/listings/:id updates listing details as owner donor
+   ✓ 4. Donation Request Workflow, Double-Booking Guard & Pickup
+     ✓ POST /api/v1/requests creates a claim request as RECIPIENT
+     ✓ POST /api/v1/requests prevents duplicate pending requests from same recipient
+     ✓ POST /api/v1/requests/:id/accept allows donor to accept request and issues verification code
+     ✓ DOUBLE-BOOKING GUARD: Prevents accepting another request or claiming a CONFIRMED listing (HTTP 409 Conflict)
+     ✓ POST /api/v1/requests/:id/complete confirms pickup with verification code
+     ✓ POST /api/v1/requests/:id/complete rejects invalid verification code
+   ✓ 5. Platform Impact Statistics & Admin Moderation
+     ✓ GET /api/v1/stats/platform returns dynamic calculated impact metrics
+     ✓ GET /api/v1/admin/users lists all users for ADMIN
+     ✓ GET /api/v1/admin/audit-logs lists audit log trail
+
+--------------------------------------------------------------------------------
+ Test Files:  1 passed (1 total)
+ Tests:       23 passed (23 total)
+ Status:      ALL TESTS PASSING (0 Failures, 0 Flaky)
+ Duration:    2.97s
+--------------------------------------------------------------------------------
+Verification Hash: 8b0129a6fbdb74e4428135be368ce48c

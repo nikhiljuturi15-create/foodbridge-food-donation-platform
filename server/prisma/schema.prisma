@@ -1,0 +1,85 @@
+// Prisma Schema for FoodBridge - Food Donation and Redistribution Platform (HACK-P197)
+// Configured with SQLite for persistent zero-dependency local verification.
+// Can be switched to PostgreSQL by updating provider = "postgresql" and DATABASE_URL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String            @id @default(uuid())
+  email              String            @unique
+  password           String
+  name               String
+  role               String            @default("DONOR") // "DONOR" | "RECIPIENT" | "ADMIN"
+  phone              String?
+  address            String?
+  city               String?
+  organizationType   String?           // "Restaurant" | "Supermarket" | "Bakery" | "Shelter" | "Food Bank" | "NGO" | "Orphanage" | "Individual"
+  registrationNumber String?           // NGO or Business registration number
+  isVerified         Boolean           @default(false)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  listings           Listing[]
+  requests           DonationRequest[]
+  auditLogs          AuditLog[]
+}
+
+model Listing {
+  id                  String            @id @default(uuid())
+  donorId             String
+  donor               User              @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  title               String
+  description         String
+  category            String            // "COOKED_MEALS" | "BAKERY" | "PRODUCE" | "DAIRY" | "PACKAGED_GOODS" | "OTHER"
+  quantity            Float
+  unit                String            // "kg" | "servings" | "meals" | "boxes" | "loaves" | "liters"
+  dietaryInfo         String?           // "Vegetarian" | "Vegan" | "Halal" | "Non-Vegetarian" | "Gluten-Free"
+  preparedAt          DateTime?
+  useBy               DateTime
+  pickupWindowStart   DateTime
+  pickupWindowEnd     DateTime
+  pickupAddress       String
+  pickupCity          String
+  storageInstructions String?
+  foodSafetyConfirmed Boolean           @default(true)
+  status              String            @default("AVAILABLE") // "AVAILABLE" | "REQUESTED" | "CONFIRMED" | "COMPLETED" | "CANCELLED" | "EXPIRED"
+  imageUrl            String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  requests            DonationRequest[]
+}
+
+model DonationRequest {
+  id                 String    @id @default(uuid())
+  listingId          String
+  listing            Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  recipientId        String
+  recipient          User      @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  status             String    @default("PENDING") // "PENDING" | "ACCEPTED" | "REJECTED" | "CANCELLED" | "COMPLETED"
+  requestedQuantity  Float
+  pickupTime         DateTime?
+  purpose            String?
+  rejectionReason    String?
+  cancellationReason String?
+  verificationCode   String?   // Generated upon acceptance for secure pickup confirmation
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  details   String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+}
