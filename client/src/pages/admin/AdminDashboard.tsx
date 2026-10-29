@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import { User, Listing, AuditLog } from '../../types';
 import { StatusBadge } from '../../components/StatusBadge';
+import { useAuth } from '../../context/AuthContext';
 import { 
   ShieldCheck, 
   Users, 
@@ -16,12 +18,26 @@ import {
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [stats, setStats] = useState<any>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [listings, setListings] = useState<Listing[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [activeTab, setActiveTab] = useState<'users' | 'listings' | 'logs'>('users');
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/login', { replace: true });
+      return;
+    }
+
+    if (user.role !== 'ADMIN') {
+      navigate('/', { replace: true });
+      return;
+    }
+  }, [user, navigate]);
 
   const fetchAdminData = async () => {
     setLoading(true);
@@ -36,8 +52,12 @@ export const AdminDashboard: React.FC = () => {
       setUsers(usersRes.data.users);
       setListings(listingsRes.data.listings);
       setAuditLogs(logsRes.data.logs);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to load admin data:', err);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        logout();
+        navigate('/login', { replace: true });
+      }
     } finally {
       setLoading(false);
     }

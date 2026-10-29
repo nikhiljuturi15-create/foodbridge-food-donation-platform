@@ -6,8 +6,9 @@ export class AuthController {
   static async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { email, password, name, role, phone, address, city, organizationType, registrationNumber } = req.body;
+      const normalizedEmail = String(email || '').trim().toLowerCase();
 
-      const existingUser = await prisma.user.findUnique({ where: { email } });
+      const existingUser = await prisma.user.findUnique({ where: { email: normalizedEmail } });
       if (existingUser) {
         res.status(409).json({
           success: false,
@@ -21,7 +22,7 @@ export class AuthController {
 
       const user = await prisma.user.create({
         data: {
-          email,
+          email: normalizedEmail,
           password: hashedPassword,
           name,
           role: role || 'DONOR',
@@ -73,8 +74,9 @@ export class AuthController {
   static async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { email, password } = req.body;
+      const normalizedEmail = String(email || '').trim().toLowerCase();
 
-      const user = await prisma.user.findUnique({ where: { email } });
+      const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
       if (!user) {
         res.status(401).json({
           success: false,

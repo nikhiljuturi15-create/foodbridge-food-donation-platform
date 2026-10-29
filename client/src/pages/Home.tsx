@@ -47,8 +47,9 @@ export const Home: React.FC = () => {
 
   const handleQuickDemoLogin = async (email: string, roleRedirect: string) => {
     try {
-      const password = email.startsWith('admin') ? 'Admin@123' : 'Password@123';
-      const res = await api.post('/auth/login', { email, password });
+      const normalizedEmail = email.trim().toLowerCase();
+      const password = normalizedEmail.startsWith('admin') ? 'Admin@123' : 'Password@123';
+      const res = await api.post('/auth/login', { email: normalizedEmail, password });
       login(res.data.token, res.data.user);
       navigate(roleRedirect);
     } catch (err) {

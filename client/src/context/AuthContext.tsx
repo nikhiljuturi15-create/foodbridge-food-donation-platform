@@ -25,14 +25,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (storedToken && storedUser) {
       try {
+        const parsedUser = JSON.parse(storedUser) as User;
+        const normalizedUser = {
+          ...parsedUser,
+          email: String(parsedUser.email || '').trim().toLowerCase(),
+        } as User;
+
         setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-        // Verify with /me
+        setUser(normalizedUser);
+
         api.get('/auth/me')
           .then((res) => {
             if (res.data.user) {
-              setUser(res.data.user);
-              localStorage.setItem('foodbridge_user', JSON.stringify(res.data.user));
+              const refreshedUser = { ...res.data.user, email: String(res.data.user.email || '').trim().toLowerCase() } as User;
+              setUser(refreshedUser);
+              localStorage.setItem('foodbridge_user', JSON.stringify(refreshedUser));
             }
           })
           .catch(() => {
@@ -48,10 +55,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = (newToken: string, newUser: User) => {
+    const normalizedUser = {
+      ...newUser,
+      email: String(newUser.email || '').trim().toLowerCase(),
+      role: newUser.role,
+    } as User;
+
     localStorage.setItem('foodbridge_token', newToken);
-    localStorage.setItem('foodbridge_user', JSON.stringify(newUser));
+    localStorage.setItem('foodbridge_user', JSON.stringify(normalizedUser));
     setToken(newToken);
-    setUser(newUser);
+    setUser(normalizedUser);
   };
 
   const logout = () => {

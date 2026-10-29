@@ -114,6 +114,23 @@ describe('FoodBridge End-to-End API Test Suite (HACK-P197)', () => {
       expect(res.body.success).toBe(false);
     });
 
+    it('POST /api/v1/auth/login accepts mixed-case email addresses and admin dashboard authorizes admin', async () => {
+      const res = await request(app)
+        .post('/api/v1/auth/login')
+        .send({ email: 'ADMIN@FOODBRIDGE.ORG', password: 'Admin@123' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.user.role).toBe('ADMIN');
+
+      const adminStatsRes = await request(app)
+        .get('/api/v1/stats/dashboard')
+        .set('Authorization', `Bearer ${res.body.token}`);
+
+      expect(adminStatsRes.status).toBe(200);
+      expect(adminStatsRes.body.stats.totalUsers).toBeGreaterThan(0);
+    });
+
     it('GET /api/v1/auth/me returns authenticated user details', async () => {
       const res = await request(app)
         .get('/api/v1/auth/me')

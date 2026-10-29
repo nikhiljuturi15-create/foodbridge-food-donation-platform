@@ -18,7 +18,8 @@ export const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      const res = await api.post('/auth/login', { email, password });
+      const normalizedEmail = email.trim().toLowerCase();
+      const res = await api.post('/auth/login', { email: normalizedEmail, password: password.trim() });
       login(res.data.token, res.data.user);
 
       // Route by role
