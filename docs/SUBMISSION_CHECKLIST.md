@@ -33,9 +33,8 @@
 | **7** | Postman API Test Collection | `postman/foodbridge_collection.json` | ✅ **VERIFIED** (Tests & Environment included) |
 | **8** | Actual Application UI Screenshots | `screenshots/` (01 to 08) | ✅ **VERIFIED** (Live headless captures) |
 | **9** | 12-Slide Presentation (.pptx) | `deliverables/FoodBridge_Presentation_HACK-P197.pptx` | ✅ **VERIFIED** (Generated editable deck) |
-| **10**| 3–5 Minute Demo Video Script | `docs/DEMO_VIDEO_SCRIPT.md` | ✅ **VERIFIED** (Step-by-step cues & narration) |
-| **11**| Mandatory Food Safety Disclaimer | In UI & API `/food-safety` | ✅ **VERIFIED** (Non-certification compliant) |
-| **12**| Git Repository & Verified History | Local Git & Remote Configuration | ✅ **VERIFIED** (Clean commit history, no secrets) |
+| **10**| Mandatory Food Safety Disclaimer | In UI & API `/food-safety` | ✅ **VERIFIED** (Non-certification compliant) |
+| **11**| Git Repository & Verified History | Local Git & Remote Configuration | ✅ **VERIFIED** (Clean commit history, no secrets) |
 
 ---
 

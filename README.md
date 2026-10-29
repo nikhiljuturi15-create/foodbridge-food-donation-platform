@@ -245,7 +245,6 @@ NikhilBackendProject/
 │   ├── ARCHITECTURE.md         # System architecture & sequence diagrams
 │   ├── DATABASE.md             # ER diagram & data dictionary
 │   ├── API_DOCUMENTATION.md    # Complete REST API specifications
-│   ├── DEMO_VIDEO_SCRIPT.md    # 3-5 minute video narration script
 │   └── SUBMISSION_CHECKLIST.md # Official submission checklist (4 team placeholders)
 ├── deliverables/
 │   └── FoodBridge_Presentation_HACK-P197.pptx # Official 12-slide presentation
