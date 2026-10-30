@@ -6,12 +6,13 @@ import requestRoutes from './routes/requestRoutes';
 import adminRoutes from './routes/adminRoutes';
 import statsRoutes from './routes/statsRoutes';
 import { errorHandler } from './middlewares/errorHandler';
+import { ENV } from './config/env';
 
 export const app = express();
 
 // Middlewares
 app.use(cors({
-  origin: true, // Allow frontend origin in dev & prod
+  origin: ENV.CLIENT_URL,
   credentials: true,
 }));
 app.use(express.json());
